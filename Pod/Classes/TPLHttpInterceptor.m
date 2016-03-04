@@ -13,6 +13,9 @@ static NSString *TPL_HTTP_INTERCEPTOR_HEADER_MARKER = @"X-TPL_HTTP_INTERCEPTOR";
 
 @interface TPLHttpInterceptor()<NSURLConnectionDataDelegate>
 
+/**
+ *  mutable copy of incoming request
+ */
 @property (strong, nonatomic) NSMutableURLRequest *mutableRequest;
 
 @end
@@ -21,14 +24,41 @@ static NSString *TPL_HTTP_INTERCEPTOR_HEADER_MARKER = @"X-TPL_HTTP_INTERCEPTOR";
 
 @implementation TPLHttpInterceptor
 
+/**
+ *  Block which gets called just before the request starts
+ *
+ *  @see enableWithBlock:
+ */
+static void (^block)(NSMutableURLRequest *request);
+
 + (void)enable
 {
-    [NSURLProtocol registerClass:[self class]];
+    [self _assertBlock];
+    [self _registerClass];
+}
+
++ (void)enableWithBlock:(void (^)(NSMutableURLRequest * _Nonnull))b
+{
+    block = b;
+    [self _assertBlock];
+    [self _registerClass];
 }
 
 + (void)disable
 {
     [NSURLProtocol unregisterClass:[self class]];
+}
+
+#pragma mark - private methods
+
++ (void)_registerClass
+{
+    [NSURLProtocol registerClass:[self class]];
+}
+
++ (void)_assertBlock
+{
+    NSAssert(block, @"block can not be empty");
 }
 
 #pragma mark - NSURLProtocol
@@ -66,7 +96,7 @@ static NSString *TPL_HTTP_INTERCEPTOR_HEADER_MARKER = @"X-TPL_HTTP_INTERCEPTOR";
 
 - (void)startLoading
 {
-    NSLog(@"start load %@", self.request.URL);
+    block(_mutableRequest);
     [NSURLConnection connectionWithRequest:_mutableRequest delegate:self];
 }
 
@@ -109,7 +139,8 @@ didReceiveResponse:(NSURLResponse *)response
             redirectResponse:(NSURLResponse *)redirectResponse
 {
     if (redirectResponse) {
-        return request;
+        block(_mutableRequest);
+        return _mutableRequest;
     } else {
         return request;
     }

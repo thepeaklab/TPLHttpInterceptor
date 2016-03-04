@@ -21,7 +21,9 @@
 {
     [super viewDidLoad];
     
-    [TPLHttpInterceptor enable];
+    [TPLHttpInterceptor enableWithBlock:^(NSMutableURLRequest *request) {
+        NSLog(@"will start: %@", request.URL);
+    }];
     
     NSURL *url = [NSURL URLWithString:@"https://www.google.de"];
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
@@ -31,7 +33,6 @@
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end

@@ -22,7 +22,7 @@ pod "TPLHttpInterceptor"
 
 ## Author
 
-Christoph Pageler, christoph.pageler@ewetel.net
+Christoph Pageler, cp@thepeaklab.com
 
 ## License
 
