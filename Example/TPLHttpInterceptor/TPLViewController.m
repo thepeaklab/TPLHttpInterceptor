@@ -7,8 +7,11 @@
 //
 
 #import "TPLViewController.h"
+#import <TPLHttpInterceptor/TPLHttpInterceptor.h>
 
 @interface TPLViewController ()
+
+@property (strong, nonatomic) IBOutlet UIWebView *webView;
 
 @end
 
@@ -17,7 +20,12 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
+    
+    [TPLHttpInterceptor enable];
+    
+    NSURL *url = [NSURL URLWithString:@"https://www.google.de"];
+    NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
+    [_webView loadRequest:urlRequest];
 }
 
 - (void)didReceiveMemoryWarning
