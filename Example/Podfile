@@ -1,0 +1,15 @@
+source 'https://github.com/CocoaPods/Specs.git'
+use_frameworks!
+
+target 'TPLHttpInterceptor_Example', :exclusive => true do
+  pod 'TPLHttpInterceptor', :path => '../'
+end
+
+target 'TPLHttpInterceptor_Tests', :exclusive => true do
+  pod 'TPLHttpInterceptor', :path => '../'
+
+  pod 'Specta'
+  pod 'Expecta'
+  pod 'FBSnapshotTestCase'
+  pod 'Expecta+Snapshots'
+end
