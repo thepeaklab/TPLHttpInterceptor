@@ -25,7 +25,7 @@
         NSLog(@"will start: %@", request.URL);
     }];
     
-    NSURL *url = [NSURL URLWithString:@"https://www.google.de"];
+    NSURL *url = [NSURL URLWithString:@"http://www.thepeaklab.com"];
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
     [_webView loadRequest:urlRequest];
 }

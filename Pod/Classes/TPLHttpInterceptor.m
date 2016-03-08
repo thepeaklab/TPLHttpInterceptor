@@ -51,21 +51,42 @@ static void (^block)(NSMutableURLRequest *request);
 
 #pragma mark - private methods
 
+/**
+ *  registers this class in NSURLProtocol
+ */
 + (void)_registerClass
 {
     [NSURLProtocol registerClass:[self class]];
 }
 
+/**
+ *  asserts block existence
+ */
 + (void)_assertBlock
 {
     NSAssert(block, @"block can not be empty");
+}
+
+/**
+ *  copies NSURLRequest mutable and adds TPL_HTTP_INTERCEPTOR_HEADER_MARKER in HTTP Headers to determine 
+ *  whether the request was modified already
+ *
+ *  @param urlRequest request to copy
+ *
+ *  @return mutable copy
+ */
+- (NSMutableURLRequest *)copyRequestMutable:(NSURLRequest *)urlRequest
+{
+    NSMutableURLRequest *mutableCopy = [urlRequest mutableCopy];
+    [mutableCopy setValue:@"true" forHTTPHeaderField:TPL_HTTP_INTERCEPTOR_HEADER_MARKER];
+    return mutableCopy;
 }
 
 #pragma mark - NSURLProtocol
 
 + (BOOL)canInitWithRequest:(NSURLRequest *)request
 {
-    return ([[request allHTTPHeaderFields] objectForKey:TPL_HTTP_INTERCEPTOR_HEADER_MARKER] == nil);
+    return [request allHTTPHeaderFields][TPL_HTTP_INTERCEPTOR_HEADER_MARKER] == nil;
 }
 
 + (NSURLRequest *)canonicalRequestForRequest:(NSURLRequest *)request
@@ -86,9 +107,8 @@ static void (^block)(NSMutableURLRequest *request);
     if (self = [super initWithRequest:request
                        cachedResponse:cachedResponse
                                client:client]) {
-        
-        _mutableRequest = [request mutableCopy];
-        [_mutableRequest addValue:@"True" forHTTPHeaderField:TPL_HTTP_INTERCEPTOR_HEADER_MARKER];
+        // copy
+        _mutableRequest = [self copyRequestMutable:request];
         
     }
     return self;
@@ -139,11 +159,12 @@ didReceiveResponse:(NSURLResponse *)response
             redirectResponse:(NSURLResponse *)redirectResponse
 {
     if (redirectResponse) {
-        block(_mutableRequest);
-        return _mutableRequest;
-    } else {
-        return request;
+        NSMutableURLRequest *mutableRequest = [self copyRequestMutable:request];
+        block(mutableRequest);
+        return mutableRequest;
     }
+    
+    return request;
 }
 
 - (NSCachedURLResponse *)connection:(NSURLConnection *)connection
